@@ -8,9 +8,15 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
+//Préfixe des routes utilisées par le contrôleur (commencent toutes par /to_do)
+#[Route("/to_do")]
 class ToDoController extends AbstractController
 {
-    #[Route('/to_do', name: 'app_to_do')]
+    //#[Route('/to_do', name: 'app_to_do')]
+
+    /**
+     * @Route("/", name="app_to_do")
+     */
     public function index(Request $request): Response
     {
         $session = $request->getSession();
@@ -30,7 +36,12 @@ class ToDoController extends AbstractController
         return $this->render('to_do/index.html.twig');
     }
 
-    #[Route('/to_do/add/{name}/{content}', name: 'app_to_do.add')]
+    #[Route(
+        // Ajout de paramètres par défauts avec "?"
+        '/add/{name?test}/{content?test}',
+        name: 'app_to_do.add',
+        //defaults: ['name'=>'sf6', 'content'=>'techwall'] ajout de paramètres par défauts
+    )]
     public function addToDo(Request $request, $name, $content): Response
     {
         $session = $request->getSession();
@@ -60,7 +71,7 @@ class ToDoController extends AbstractController
 
     }
 
-    #[Route('/to_do/update/{name}/{content}', name: 'app_to_do.update')]
+    #[Route('/update/{name}/{content}', name: 'app_to_do.update')]
     public function updateToDo(Request $request, $name, $content): RedirectResponse{
         $session = $request->getSession();
 
@@ -89,7 +100,7 @@ class ToDoController extends AbstractController
 
     }
 
-    #[Route('/to_do/delete/{name}', name: 'app_to_do.delete')]
+    #[Route('/delete/{name}', name: 'app_to_do.delete')]
     public function deleteToDo(Request $request, $name): RedirectResponse{
         $session = $request->getSession();
 
@@ -117,7 +128,7 @@ class ToDoController extends AbstractController
 
     }
 
-    #[Route('/to_do/reset', name: 'app_to_do.reset')]
+    #[Route('/reset', name: 'app_to_do.reset')]
     public function resetToDo(Request $request): RedirectResponse{
         $session = $request->getSession();
         $session->remove(name: 'toDo');

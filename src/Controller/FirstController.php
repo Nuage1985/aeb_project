@@ -8,6 +8,12 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class FirstController extends AbstractController
 {
+    #[Route('{/order/maVar}', name: 'app_test.order.route')]
+    public function testOrderRoute($maVar): Response
+    {
+        return new Response(content: "<html lang='fr'><body>$maVar</body></html>");
+    }
+
     #[Route('/first', name: 'app_first')]
     public function index(): Response
     {
@@ -25,6 +31,21 @@ class FirstController extends AbstractController
             'name'=> $name,
             'firstname'=> $firstname,
         ]);
+    }
+
+    #[Route(
+        'multi/{entier1<\d+>}/{entier2<\d+>}',
+        name: 'app_multiplication',
+        /*requirements: [
+            'entier1' => '/d+',
+            'entier2' => '/d+',
+            ]*/
+    )]
+    public function multiplication($entier1, $entier2) :Response
+    {
+        $resultat = $entier1 * $entier2;
+        return new Response(content: "<h1>$resultat</h1>");
+
     }
 
 }
