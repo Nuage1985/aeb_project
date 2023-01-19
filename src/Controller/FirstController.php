@@ -8,7 +8,7 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class FirstController extends AbstractController
 {
-    #[Route('{/order/maVar}', name: 'app_test.order.route')]
+    #[Route('/order/{maVar}', name: 'app_test.order.route')]
     public function testOrderRoute($maVar): Response
     {
         return new Response(content: "<html lang='fr'><body>$maVar</body></html>");
@@ -19,7 +19,7 @@ class FirstController extends AbstractController
     {
         return $this->render('first/index.html.twig', [
             'name' => 'Fontaine',
-            'firstname' => 'Renaud'
+            'firstname' => 'Renaud',
         ]);
     }
 
@@ -30,6 +30,7 @@ class FirstController extends AbstractController
         return $this->render('first/hello.html.twig', [
             'name'=> $name,
             'firstname'=> $firstname,
+            'path' => '     '
         ]);
     }
 

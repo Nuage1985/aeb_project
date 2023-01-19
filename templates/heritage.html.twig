@@ -5,11 +5,19 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Hello</title>
+    <title>
+        {% block titreDuDocument %}
+            Titre par défaut du document
+        {% endblock %}
+    </title>
 </head>
 <body>
-    <h1>Hello {{ name | capitalize }} {{ firstname | upper }}</h1>
-    <p>Nous sommes le : {{ "now" | date("d/m/Y") }}</p>
-    <img src="{{ asset('assets/images/') ~ path | defaultImage }}" alt="">
+    header
+    <hr>
+    {% block corpsDuDocument %}
+        Du contenu par défaut du bloc corpsDuDocument
+    {% endblock %}
+    <hr>
+    footer
 </body>
 </html>
