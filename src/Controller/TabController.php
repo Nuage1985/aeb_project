@@ -9,7 +9,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class TabController extends AbstractController
 {
     // "?" donner une valeur par défaut
-    #[Route('/tab/{nb</d+>?5}', name: 'app_tab')]
+    #[Route('/tab/{nb<\d+>?5}', name: 'app_tab')]
     public function index($nb): Response
     {
         $notes = [];
