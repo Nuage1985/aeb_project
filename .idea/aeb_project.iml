@@ -133,6 +133,16 @@
       <excludeFolder url="file://$MODULE_DIR$/vendor/sebastian/diff" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/sebastian/lines-of-code" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/sebastian/type" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/psr/http-client" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/psr/http-message" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/psr/http-factory" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/clue/stream-filter" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/php-http/message-factory" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/php-http/promise" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/php-http/httplug" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/php-http/curl-client" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/php-http/discovery" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/php-http/message" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
