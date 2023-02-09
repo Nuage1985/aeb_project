@@ -13,14 +13,15 @@
                 <h5 class="card-title">{{ personne.name }}</h5>
                 <h6 class="card-subtitle mb-2 text-muted">{{ personne.firstname }} {{ personne.name }}</h6>
                 <p class="card-text">Âge : {{ personne.age }}</p>
-                <a href="{{ path('personne.detail', {id: personne.id}) }}" class="card-link">Détails</a>
+                <a href="{{ path('app_personne.detail', {id: personne.id}) }}" class="card-link">Détails</a>
+                <a href="{{ path('app_personne.delete', {id: personne.id}) }}" class="card-link">Supprimer</a>
             </div>
         </div>
 
          {% endfor%}
     </div>
 
-    {% if isPaginated %}
+    {% if isPaginated is defined and isPaginated %}
 
         <div class="row mt-2">
             <nav aria-label="Page navigation example">
