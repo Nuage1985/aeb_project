@@ -3,9 +3,11 @@
 namespace App\Controller;
 
 use App\Entity\Personne;
+use App\Form\PersonneType;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -71,34 +73,56 @@ class PersonneController extends AbstractController
         return $this->render(view: 'personne/detail.html.twig', parameters: ['personne' => $personne]);
     }
 
-    #[Route('/add', name: 'app_personne.add')]
-    public function addPersonne(ManagerRegistry $doctrine): Response
+    #[Route('/edit/{id?0}', name: 'app_personne.edit')]
+    public function addPersonne( Personne $personne = null, ManagerRegistry $doctrine, Request $request): Response
     {
-        //$this->getDoctrine() : Version Sf < 5
-        $entityManager = $doctrine->getManager();
+        $new = false;
+        if(!$personne){
+            $new = true;
+            $personne = new Personne();
+        }
 
-        $personne = new Personne();
-        $personne->setFirstname(firstname: 'Renaud');
-        $personne->setName(name: 'Fontaine');
-        $personne->setAge(age: 37);
+        // Ici $personne est l'image de notre formulaire
+        // Génération du formulaire
+        $form = $this->createForm(PersonneType::class, $personne);
 
-        //$personne2 = new Personne();
-        //$personne2->setFirstname(firstname: 'Jessica');
-        //$personne2->setName(name: 'Peretti');
-        //$personne2->setAge(age: 35);
+        //Suppression des champs de formulaire non requis ex CreatedAt (Ou supprimer dans Form/PersonneType)
+        $form->remove(name: 'createdAt');
+        $form->remove(name: 'updatedAt');
 
+        //Traitement
+        //dump($request);
+        // Mon formulaire va traiter la requête
+        $form->handleRequest($request);
 
+        // Le formulaire est-il soumis ?
+        if ( $form->isSubmitted() ){
+            // Oui -> ajout de cet nouvel objet Personne dans la BDD
 
-        // Ajouter l'opération d'insertion de la personne dans ma transaction
-        $entityManager->persist($personne);
-        //$entityManager->persist($personne2);
+            //$this->getDoctrine() : Version Sf < 5
+            $manager = $doctrine->getManager();
+            $manager->persist($personne);
 
-        // Exécute la transaction Todo
-        $entityManager->flush();
+            $manager->flush();
 
-        return $this->render('personne/detail.html.twig', [
-            'personne' => $personne,
-        ]);
+            //Message de succès
+            if ($new){
+                $message = " a été ajouté avec succès !";
+            }else{
+                $message = " a été mis à jour avec succès !";
+            }
+            $this->addFlash(type: 'success', message: "Le profil ".$personne->getName().$message);
+
+            //Redirection vers la liste des personnes
+            return $this->redirectToRoute('app_personne.list.alls');
+        }
+
+        //Non -> Affiche le formulaire
+        else {
+            return $this->render('personne/add-personne.html.twig', [
+                'form' => $form->createView(),
+            ]);
+        }
     }
 
     #[Route('/delete/{id}', name: 'app_personne.delete')]
