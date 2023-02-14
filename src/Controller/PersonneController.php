@@ -6,10 +6,12 @@ use App\Entity\Personne;
 use App\Form\PersonneType;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\String\Slugger\SluggerInterface;
 
 #[Route('personne')]
 class PersonneController extends AbstractController
@@ -74,9 +76,16 @@ class PersonneController extends AbstractController
     }
 
     #[Route('/edit/{id?0}', name: 'app_personne.edit')]
-    public function addPersonne( Personne $personne = null, ManagerRegistry $doctrine, Request $request): Response
-    {
+    public function addPersonne(
+        Personne $personne = null,
+        ManagerRegistry $doctrine,
+        SluggerInterface $slugger,
+        Request $request
+    ): Response {
+
+        // Déterminer si on creer un profil ou si on l'update
         $new = false;
+
         if(!$personne){
             $new = true;
             $personne = new Personne();
@@ -96,8 +105,34 @@ class PersonneController extends AbstractController
         $form->handleRequest($request);
 
         // Le formulaire est-il soumis ?
-        if ( $form->isSubmitted() ){
+        if ( $form->isSubmitted() && $form->isValid() ){
             // Oui -> ajout de cet nouvel objet Personne dans la BDD
+
+            // Traitement d'une image de profil
+            $brochureFile = $form->get('photo')->getData();
+
+            // this condition is needed because the 'brochure' field is not required
+            // so the Image file must be processed only when a file is uploaded
+            if ($brochureFile) {
+                $originalFilename = pathinfo($brochureFile->getClientOriginalName(), PATHINFO_FILENAME);
+                // this is needed to safely include the file name as part of the URL
+                $safeFilename = $slugger->slug($originalFilename);
+                $newFilename = $safeFilename.'-'.uniqid().'.'.$brochureFile->guessExtension();
+
+                // Move the file to the directory where brochures are stored
+                try {
+                    $brochureFile->move(
+                        $this->getParameter('personne_directory'),
+                        $newFilename
+                    );
+                } catch (FileException $e) {
+                    // ... handle exception if something happens during file upload
+                }
+
+                // updates the 'brochureFilename' property to store the PDF file name
+                // instead of its contents
+                $personne->setImage($newFilename);
+            }
 
             //$this->getDoctrine() : Version Sf < 5
             $manager = $doctrine->getManager();
@@ -155,9 +190,12 @@ class PersonneController extends AbstractController
             $personne->setName($name);
             $personne->setFirstname($firstname);
             $personne->setAge($age);
+
             $manager = $doctrine->getManager();
             $manager->persist($personne);
             $manager->flush();
+
+            //Message
             $this->addFlash(type: 'success', message: "La personne a été mise à jour avec succès");
         } else {
             // Sinon message d'erreur
