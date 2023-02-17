@@ -2,6 +2,7 @@
 
 namespace App\Form;
 
+use App\Entity\Job;
 use App\Entity\Hobby;
 use App\Entity\Profile;
 use App\Entity\Personne;
@@ -25,12 +26,17 @@ class PersonneType extends AbstractType
             ->add(child:'createdAt')
             ->add(child:'updatedAt')
             ->add(child:'profil', type: EntityType::class, options:[
-                'expanded' => true,
+                'expanded' => false,
+                'required' => false,
                 'multiple' => false,
                 'class' => Profile::class,
+                'attr' => [
+                    'class' => 'select2',
+                ]
             ])
             ->add(child: 'hobbies', type:EntityType::class, options:[
                 'expanded' => false,
+                'required' => false,
                 'multiple' => true,
                 'class' => Hobby::class,
                 'query_builder' => function(EntityRepository $er){
@@ -38,8 +44,17 @@ class PersonneType extends AbstractType
                     ->orderBy('h.designation', 'ASC');
                 },
                 'choice_label' => 'designation',
+                'attr' => [
+                    'class' => 'select2',
+                ]
             ])
-            ->add(child: 'job')
+            ->add(child: 'job', type: EntityType::class, options: [
+                'attr' => [
+                    'class' => 'select2',
+                ],
+                'required' => false,
+                'class' => Job::class,
+            ])
             ->add(child:'photo', type: FileType::class, options: [
                 'label' => 'Votre image de  profil (fichiers images uniquement)',
 

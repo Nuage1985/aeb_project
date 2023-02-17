@@ -3,19 +3,23 @@
 namespace App\Controller;
 
 use App\Entity\Personne;
+use App\Services\Helpers;
 use App\Form\PersonneType;
+use Psr\Log\LoggerInterface;
+use App\Services\UploaderService;
 use Doctrine\Persistence\ManagerRegistry;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\File\Exception\FileException;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\String\Slugger\SluggerInterface;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 #[Route('personne')]
 class PersonneController extends AbstractController
 {
+    // Exemple injection de dépendances
+    public function __construct( private LoggerInterface $logger, private Helpers $helpers){}
+
     #[Route('/', name: 'app_personne.list')]
     public function index(ManagerRegistry $doctrine): Response {
         $repository = $doctrine->getRepository(Personne::class);
@@ -45,7 +49,11 @@ class PersonneController extends AbstractController
 
     //Pagination
     #[Route('/alls/{page?1}/{nbre?12}', name: 'app_personne.list.alls')]
-    public function indexAlls(ManagerRegistry $doctrine, $page, $nbre): Response {
+    public function indexAlls(ManagerRegistry $doctrine, $page, $nbre, ): Response {
+
+        // Test services
+
+        echo $this->helpers->sayCc();
 
         $repository = $doctrine->getRepository(persistentObject: Personne::class);
 
@@ -79,8 +87,8 @@ class PersonneController extends AbstractController
     public function addPersonne(
         Personne $personne = null,
         ManagerRegistry $doctrine,
-        SluggerInterface $slugger,
-        Request $request
+        Request $request,
+        UploaderService $uploaderService,
     ): Response {
 
         // Déterminer si on creer un profil ou si on l'update
@@ -109,29 +117,11 @@ class PersonneController extends AbstractController
             // Oui -> ajout de cet nouvel objet Personne dans la BDD
 
             // Traitement d'une image de profil
-            $brochureFile = $form->get('photo')->getData();
+            $photo = $form->get('photo')->getData();
 
-            // this condition is needed because the 'brochure' field is not required
-            // so the Image file must be processed only when a file is uploaded
-            if ($brochureFile) {
-                $originalFilename = pathinfo($brochureFile->getClientOriginalName(), PATHINFO_FILENAME);
-                // this is needed to safely include the file name as part of the URL
-                $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename.'-'.uniqid().'.'.$brochureFile->guessExtension();
-
-                // Move the file to the directory where brochures are stored
-                try {
-                    $brochureFile->move(
-                        $this->getParameter('personne_directory'),
-                        $newFilename
-                    );
-                } catch (FileException $e) {
-                    // ... handle exception if something happens during file upload
-                }
-
-                // updates the 'brochureFilename' property to store the PDF file name
-                // instead of its contents
-                $personne->setImage($newFilename);
+            if ($photo) {
+                $directory = $this->getParameter(name: 'personne_directory');
+                $personne->setImage($uploaderService->uploadImage($photo, $directory));
             }
 
             //$this->getDoctrine() : Version Sf < 5

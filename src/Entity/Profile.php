@@ -5,6 +5,8 @@ namespace App\Entity;
 use App\Repository\ProfileRepository;
 use App\Traits\TimeStampTrait;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 #[ORM\Entity(repositoryClass: ProfileRepository::class)]
 #[ORM\HasLifecycleCallbacks]
@@ -23,8 +25,8 @@ class Profile
     #[ORM\Column(length: 50)]
     private ?string $rs = null;
 
-    #[ORM\OneToOne(mappedBy: 'profil', cascade: ['persist', 'remove'])]
-    private ?Personne $personne = null;
+   #[ORM\OneToMany(mappedBy: 'profil', targetEntity: Personne::class)]
+    private Collection $personnes;
 
     public function getId(): ?int
     {
