@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Personne;
 use App\Services\Helpers;
 use App\Form\PersonneType;
+use App\Services\MailerService;
 use Psr\Log\LoggerInterface;
 use App\Services\UploaderService;
 use Doctrine\Persistence\ManagerRegistry;
@@ -89,6 +90,7 @@ class PersonneController extends AbstractController
         ManagerRegistry $doctrine,
         Request $request,
         UploaderService $uploaderService,
+        MailerService $mailer,
     ): Response {
 
         // Déterminer si on creer un profil ou si on l'update
@@ -133,10 +135,13 @@ class PersonneController extends AbstractController
             //Message de succès
             if ($new){
                 $message = " a été ajouté avec succès !";
+                
             }else{
                 $message = " a été mis à jour avec succès !";
             }
+            $mailMessage = $personne->getFirstname().' '.$personne->getName().' '.$message;
             $this->addFlash(type: 'success', message: "Le profil ".$personne->getName().$message);
+            $mailer->sendEmail(content: $mailMessage);
 
             //Redirection vers la liste des personnes
             return $this->redirectToRoute('app_personne.list.alls');
