@@ -9,14 +9,16 @@ use App\Services\MailerService;
 use App\Services\PdfService;
 use Psr\Log\LoggerInterface;
 use App\Services\UploaderService;
+use Attribute;
 use Doctrine\Persistence\ManagerRegistry;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
-#[Route('personne')]
+#[Route('personne'), IsGranted('ROLE_USER')]
 class PersonneController extends AbstractController
 {
     // Exemple injection de dépendances
@@ -61,12 +63,13 @@ class PersonneController extends AbstractController
     }
 
     //Pagination
-    #[Route('/alls/{page?1}/{nbre?12}', name: 'app_personne.list.alls')]
+    #[Route('/alls/{page?1}/{nbre?12}', name: 'app_personne.list.alls'),
+    IsGranted("ROLE_USER")
+    ]
     public function indexAlls(ManagerRegistry $doctrine, $page, $nbre): Response
     {
         // Test services
-
-        echo $this->helpers->sayCc();
+        //echo $this->helpers->sayCc();
 
         $repository = $doctrine->getRepository(persistentObject: Personne::class);
 
@@ -103,6 +106,9 @@ class PersonneController extends AbstractController
         UploaderService $uploaderService,
         MailerService $mailer,
     ): Response {
+        // Verifier si role Admin
+        $this->denyAccessUnlessGranted(attribute: 'ROLE_ADMIN');
+
         // Déterminer si on creer un profil ou si on l'update
         $new = false;
 
@@ -167,7 +173,7 @@ class PersonneController extends AbstractController
         }
     }
 
-    #[Route('/delete/{id}', name: 'app_personne.delete')]
+    #[Route('/delete/{id}', name: 'app_personne.delete'), IsGranted('ROLE_ADMIN')]
     public function deletePersonne(Personne $personne = null, ManagerRegistry $doctrine): RedirectResponse
     {
         //Récupérer la personne

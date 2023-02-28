@@ -18,8 +18,10 @@
 					<p class="card-text">Âge :
 						{{ personne.age }}</p>
 					<a href="{{ path('app_personne.detail', {id: personne.id}) }}" class="card-link"><i class="fa-solid fa-circle-info"></i></a>
+					{% if is_granted('ROLE_ADMIN') %}
 					<a href="{{ path('app_personne.edit', {id: personne.id}) }}" class="card-link"><i class="fa-solid fa-user-pen"></i></a>
 					<a href="{{ path('app_personne.delete', {id: personne.id}) }}" class="card-link"><i class="fa-solid fa-user-xmark"></i></a>
+					{% endif %}
 				</div>
 			</div>
 

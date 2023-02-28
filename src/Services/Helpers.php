@@ -19,6 +19,13 @@ class Helpers
     }
 
     public function getUser(): User {
-        return $this->security->getUser();
+        if($this->security->isGranted(attributes: 'ROLE_ADMIN')){
+
+            $user = $this->security->getUser();
+
+            if($user instanceof User){
+                return $user;
+            }
+        }
     }
 }
