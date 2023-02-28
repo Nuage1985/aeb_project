@@ -20,30 +20,36 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 class PersonneController extends AbstractController
 {
     // Exemple injection de dépendances
-    public function __construct( private LoggerInterface $logger, private Helpers $helpers){}
+    public function __construct(private LoggerInterface $logger, private Helpers $helpers)
+    {
+    }
 
     #[Route('/', name: 'app_personne.list')]
-    public function index(ManagerRegistry $doctrine): Response {
+    public function index(ManagerRegistry $doctrine): Response
+    {
         $repository = $doctrine->getRepository(Personne::class);
         $personnes = $repository->findAll();
 
         return $this->render(view: 'personne/index.html.twig', parameters: ['personnes' => $personnes]);
     }
     #[Route('/pdf/{id}', name: 'app_personne.pdf')]
-    public function generatePdfPersonne(Personne $personne = null, PdfService $pdf){
+    public function generatePdfPersonne(Personne $personne = null, PdfService $pdf)
+    {
         $html = $this->render(view: 'personne/detail.html.twig', parameters: ['personne' => $personne]);
         $pdf->showPdfFile($html);
     }
 
     #[Route('/alls/age/{ageMin}/{ageMax}', name: 'app_personne.list.alls.age')]
-    public function PersonneByAge(ManagerRegistry $doctrine, $ageMin, $ageMax): Response {
+    public function PersonneByAge(ManagerRegistry $doctrine, $ageMin, $ageMax): Response
+    {
         $repository = $doctrine->getRepository(Personne::class);
         $personnes = $repository->findPersonneByAgeInterval($ageMin, $ageMax);
         return $this->render(view: 'personne/index.html.twig', parameters: ['personnes' => $personnes]);
     }
 
     #[Route('/stats/age/{ageMin}/{ageMax}', name: 'app_personne.list.stats.age')]
-    public function statsPersonneByAge(ManagerRegistry $doctrine, $ageMin, $ageMax): Response {
+    public function statsPersonneByAge(ManagerRegistry $doctrine, $ageMin, $ageMax): Response
+    {
         $repository = $doctrine->getRepository(Personne::class);
         $stats = $repository->statsPersonneByAgeInterval($ageMin, $ageMax);
 
@@ -56,8 +62,8 @@ class PersonneController extends AbstractController
 
     //Pagination
     #[Route('/alls/{page?1}/{nbre?12}', name: 'app_personne.list.alls')]
-    public function indexAlls(ManagerRegistry $doctrine, $page, $nbre, ): Response {
-
+    public function indexAlls(ManagerRegistry $doctrine, $page, $nbre): Response
+    {
         // Test services
 
         echo $this->helpers->sayCc();
@@ -75,14 +81,13 @@ class PersonneController extends AbstractController
             'page' => $page,
             'nbre' => $nbre,
         ]);
-
-
     }
 
     // Avec Param converters
     #[Route('/{id<\d+>}', name: 'app_personne.detail')]
-    public function detail(Personne $personne = null): Response {
-        if(!$personne){
+    public function detail(Personne $personne = null): Response
+    {
+        if (!$personne) {
             $this->addFlash(type: 'error', message: "La personne n'existe pas.");
             return $this->redirectToRoute(route: 'app_personne.list');
         }
@@ -98,11 +103,10 @@ class PersonneController extends AbstractController
         UploaderService $uploaderService,
         MailerService $mailer,
     ): Response {
-
         // Déterminer si on creer un profil ou si on l'update
         $new = false;
 
-        if(!$personne){
+        if (!$personne) {
             $new = true;
             $personne = new Personne();
         }
@@ -121,7 +125,7 @@ class PersonneController extends AbstractController
         $form->handleRequest($request);
 
         // Le formulaire est-il soumis ?
-        if ( $form->isSubmitted() && $form->isValid() ){
+        if ($form->isSubmitted() && $form->isValid()) {
             // Oui -> ajout de cet nouvel objet Personne dans la BDD
 
             // Traitement d'une image de profil
@@ -132,19 +136,21 @@ class PersonneController extends AbstractController
                 $personne->setImage($uploaderService->uploadImage($photo, $directory));
             }
 
+            //Message de succès + récupération de l'utilisateurt
+            if ($new) {
+                $message = " a été ajouté avec succès !";
+                $personne->setCreatedBy( $this->getUser() );
+            } else {
+                $message = " a été mis à jour avec succès !";
+            }
+
             //$this->getDoctrine() : Version Sf < 5
             $manager = $doctrine->getManager();
             $manager->persist($personne);
 
             $manager->flush();
 
-            //Message de succès
-            if ($new){
-                $message = " a été ajouté avec succès !";
-                
-            }else{
-                $message = " a été mis à jour avec succès !";
-            }
+
             $mailMessage = $personne->getFirstname().' '.$personne->getName().' '.$message;
             $this->addFlash(type: 'success', message: "Le profil ".$personne->getName().$message);
             $mailer->sendEmail(content: $mailMessage);
@@ -164,7 +170,6 @@ class PersonneController extends AbstractController
     #[Route('/delete/{id}', name: 'app_personne.delete')]
     public function deletePersonne(Personne $personne = null, ManagerRegistry $doctrine): RedirectResponse
     {
-
         //Récupérer la personne
         if ($personne) {
             // Si elle existe => suppression et retourner un flashMessage de succès
@@ -186,7 +191,7 @@ class PersonneController extends AbstractController
     public function updatePersonne(Personne $personne = null, ManagerRegistry $doctrine, $name, $firstname, $age): RedirectResponse
     {
         // Vérifier que la personne existe
-        if ($personne){
+        if ($personne) {
             // Si elle existe => mise à jour + message de succès
             $personne->setName($name);
             $personne->setFirstname($firstname);
@@ -204,5 +209,4 @@ class PersonneController extends AbstractController
         }
         return $this->redirectToRoute(route: 'app_personne.list.alls');
     }
-
 }

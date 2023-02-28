@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta http-equiv="X-UA-Compatible" gincontent="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <meta name="description" content="" />
     <meta name="author" content="" />
@@ -82,7 +82,11 @@
             </div>
             <div class="sb-sidenav-footer">
                 <div class="small">Logged in as:</div>
-                Start Bootstrap
+                {% if app.user %}
+                    {{ app.user.email }}
+                {% else %}
+                    Anonymous
+                {% endif %}
             </div>
         </nav>
     </div>
