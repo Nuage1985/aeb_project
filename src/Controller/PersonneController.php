@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Personne;
+use App\Event\AddPersonneEvent;
 use App\Services\Helpers;
 use App\Form\PersonneType;
 use App\Services\MailerService;
@@ -17,12 +18,17 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 #[Route('personne'), IsGranted('ROLE_USER')]
 class PersonneController extends AbstractController
 {
     // Exemple injection de dépendances
-    public function __construct(private LoggerInterface $logger, private Helpers $helpers)
+    public function __construct(
+        private LoggerInterface $logger,
+        private Helpers $helpers,
+        private EventDispatcherInterface $dispatcher
+        )
     {
     }
 
@@ -155,6 +161,14 @@ class PersonneController extends AbstractController
             $manager->persist($personne);
 
             $manager->flush();
+
+            //Event Dispatcher
+            if ($new) {
+                // Création de l'évenement
+                $addPersonneEvent = new AddPersonneEvent($personne);
+                // Dispacth
+                $this->dispatcher->dispatch($addPersonneEvent, AddPersonneEvent::ADD_PERSONNE_EVENT);
+            }
 
 
             $mailMessage = $personne->getFirstname().' '.$personne->getName().' '.$message;
