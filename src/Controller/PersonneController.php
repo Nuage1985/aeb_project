@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Personne;
 use App\Event\AddPersonneEvent;
+use App\Event\ListAllPersonnesEvent;
 use App\Services\Helpers;
 use App\Form\PersonneType;
 use App\Services\MailerService;
@@ -82,6 +83,10 @@ class PersonneController extends AbstractController
         $nbPersonne = $repository->count([]);
         $nbPage = ceil(num: $nbPersonne / $nbre);
         $personnes = $repository->findBy([], [], $nbre, offset: ($page-1) * $nbre);
+
+        //Evenement
+        $listAllPersonneEvent = new ListAllPersonnesEvent(count($personnes));
+        $this->dispatcher->dispatch($listAllPersonneEvent, ListAllPersonnesEvent::LIST_ALL_PERSONNE_EVENT);
 
         return $this->render('personne/index.html.twig', [
             'personnes' => $personnes,
@@ -170,10 +175,8 @@ class PersonneController extends AbstractController
                 $this->dispatcher->dispatch($addPersonneEvent, AddPersonneEvent::ADD_PERSONNE_EVENT);
             }
 
-
-            $mailMessage = $personne->getFirstname().' '.$personne->getName().' '.$message;
+            // Message
             $this->addFlash(type: 'success', message: "Le profil ".$personne->getName().$message);
-            $mailer->sendEmail(content: $mailMessage);
 
             //Redirection vers la liste des personnes
             return $this->redirectToRoute('app_personne.list.alls');
@@ -227,6 +230,6 @@ class PersonneController extends AbstractController
             // Sinon message d'erreur
             $this->addFlash(type: 'error', message: "Personne inexistante");
         }
-        return $this->redirectToRoute(route: 'app_personne.list.alls');
+        return $this->redirectToRoute(route: 'app_personne.list.        ');
     }
 }
